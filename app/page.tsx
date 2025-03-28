@@ -52,7 +52,8 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export default function Home() {
-  const [results, setResults] = useState([]);
+  type ResultType = { prime: number; time: number };
+  const [results, setResults] = useState<ResultType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [averageTime, setAverageTime] = useState(0);
 
