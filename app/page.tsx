@@ -1,121 +1,282 @@
-import Image from "next/image";
-import Link from "next/link";
+"use client";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
+import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
+
+import { toast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+
+const FormSchema = z.object({
+  primeDigits: z.coerce
+    .number()
+    .min(1, { message: "The number must have at least 1 digit." })
+    .max(1500, { message: "The number of digits must not exceed 1500." }),
+  iter: z.coerce
+    .number()
+    .min(5, { message: "There must be at least 5 iterations." })
+    .max(100, { message: "The number of iterations must not exceed 100." }),
+});
+
+const chartConfig = {
+  time: {
+    label: "Time (s):",
+  },
+} satisfies ChartConfig;
 
 export default function Home() {
+  const [results, setResults] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [averageTime, setAverageTime] = useState(0);
+
+  const form = useForm({
+    resolver: zodResolver(FormSchema),
+    defaultValues: {
+      primeDigits: 100,
+      iter: 5,
+    },
+  });
+
+  function fetchPrimes() {
+    setIsLoading(true);
+    setResults([]);
+    setAverageTime(0);
+
+    const eventSource = new EventSource(
+      `http://127.0.0.1:8000/generate_prime?primeDigits=${form.getValues("primeDigits")}&iter=${form.getValues("iter")}`,
+    );
+
+    eventSource.onmessage = (event) => {
+      console.log("Received:", event.data); // Debugging
+
+      if (event.data.trim() !== "") {
+        try {
+          const newPrime = JSON.parse(event.data);
+          setResults((prev) => {
+            const updatedResults = [...prev, newPrime];
+            const totalTime = updatedResults.reduce(
+              (sum, item) => sum + item.time,
+              0,
+            );
+            const avgTime = totalTime / updatedResults.length;
+            setAverageTime(avgTime);
+            return updatedResults;
+          });
+        } catch (error) {
+          console.error("Error parsing JSON:", error);
+        }
+      }
+    };
+
+    eventSource.onerror = (error) => {
+      console.error("Error receiving data", error);
+      eventSource.close();
+      setIsLoading(false);
+      toast({ title: "Error fetching data" });
+    };
+
+    eventSource.onopen = () => {
+      console.log("Connection opened!");
+    };
+
+    eventSource.addEventListener("end", () => {
+      console.log("Stream ended");
+      setIsLoading(false);
+      eventSource.close();
+    });
+  }
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing FastApi API&nbsp;
-          <Link href="/api/py/helloFastApi">
-            <code className="font-mono font-bold">api/index.py</code>
-          </Link>
-        </p>
-        <p className="fixed right-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing Next.js API&nbsp;
-          <Link href="/api/helloNextJs">
-            <code className="font-mono font-bold">app/api/helloNextJs</code>
-          </Link>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800 hover:dark:bg-opacity-30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore the Next.js 13 playground.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
+      <div className="grid grid-cols-5 gap-4 max-w-5xl">
+        <Card className="col-span-2 h-full justify-center">
+          <CardHeader>
+            <CardTitle className="text-2xl font-extrabold tracking-tight">
+              {" "}
+              Prime Number Generator{" "}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="w-fill">
+            <Form {...form}>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  fetchPrimes();
+                }}
+                className="w-full space-y-6"
+              >
+                <FormField
+                  control={form.control}
+                  name="primeDigits"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Number of Digits</FormLabel>
+                      <FormControl>
+                        <Input type="number" min={1} max={1500} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="iter"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Number of Iterations</FormLabel>
+                      <FormControl>
+                        <Input type="number" min={5} max={100} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="flex gap-4">
+                  {isLoading ? (
+                    <div className="flex items-center space-x-2 text-muted-foreground">
+                      <Loader2 className="animate-spin h-5 w-5" />
+                      <span className="text-muted-foreground">
+                        {" "}
+                        Generating Primes...{" "}
+                      </span>
+                    </div>
+                  ) : (
+                    <Button type="submit">Generate</Button>
+                  )}
+                </div>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+        <Card className="col-span-3">
+          <CardHeader>
+            <CardTitle>Runtime Line Graph</CardTitle>
+            <CardDescription>
+              This chart shows the runtime of the prime number generation per
+              iteration.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={chartConfig}>
+              <LineChart
+                accessibilityLayer
+                data={results}
+                margin={{
+                  left: 12,
+                  right: 12,
+                }}
+              >
+                <CartesianGrid vertical={false} />
+                <XAxis
+                  dataKey={"index"}
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  type="number" // Ensures proper numerical scaling
+                  domain={["dataMin", "dataMax"]} // Automatically adjust to the full dataset
+                  allowDecimals={false}
+                  interval="preserveStartEnd"
+                  tickFormatter={(value) => value}
+                />
+                <ChartTooltip
+                  cursor={false}
+                  content={({ payload }) => {
+                    if (!payload || payload.length === 0) return null;
+                    const { index, time } = payload[0].payload; // Extracting index and time
+                    return (
+                      <div className="p-2 bg-white shadow-md rounded">
+                        <p className="text-sm font-semibold">
+                          Time: {time.toFixed(4)}s
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Index: {index}
+                        </p>
+                      </div>
+                    );
+                  }}
+                />
+                <Line
+                  dataKey="time"
+                  type="linear"
+                  stroke="#000000"
+                  strokeWidth={2}
+                  dot={false}
+                  animationDuration={500}
+                />
+              </LineChart>
+            </ChartContainer>
+          </CardContent>
+          <CardFooter className="flex-col items-start gap-2 text-sm">
+            <div className="leading-none text-muted-foreground">
+              Average Runtime: {averageTime.toFixed(4)}s
+            </div>
+          </CardFooter>
+        </Card>
+        <Card className="col-span-5">
+          <CardHeader>
+            <CardTitle>Primes Generated</CardTitle>
+            <CardDescription>
+              All the prime numbers generated are shown here.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid w-full items-center gap-4">
+              <div className="flex flex-col space-y-1.5">
+                {/* <Label htmlFor="name">Name</Label> */}
+              </div>
+              <div className="flex flex-col space-y-1.5 max-h-72 overflow-y-scroll">
+                {results.length > 0 && (
+                  <ul className="grid gap-2">
+                    {results.map((item, index) => (
+                      <li
+                        key={index}
+                        className="grid grid-cols-[30px_1fr] items-start gap-2"
+                      >
+                        <span className="text-muted-foreground">
+                          {index + 1}
+                        </span>
+                        <div>
+                          <span className="break-all">{item.prime}</span>
+                          <br />
+                          <span className="text-xs text-muted-foreground">
+                            Time: {item.time.toFixed(4)}s
+                          </span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </main>
   );
