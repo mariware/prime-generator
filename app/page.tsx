@@ -33,7 +33,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator"
+import { Separator } from "@/components/ui/separator";
 
 const FormSchema = z.object({
   primeDigits: z.coerce
@@ -117,12 +117,15 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight mb-8">Prime Number Generator</h1>
+      <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight mb-8">
+        Prime Number Generator
+      </h1>
       <div className="grid md:grid-cols-5 gap-4 max-w-5xl">
         <Card className="md:col-span-2 h-full justify-center">
           <CardContent className="w-full mt-6 space-y-4">
             <CardDescription className="text-muted-foreground tracking-tight text-justify">
-              Enter the desired number of digits and the quantity of prime numbers then click "Generate" to proceed.
+              Enter the desired number of digits and the quantity of prime
+              numbers then click &#34;Generate&#34; to proceed.
             </CardDescription>
             <Separator />
             <Form {...form}>
