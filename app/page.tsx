@@ -33,6 +33,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator"
 
 const FormSchema = z.object({
   primeDigits: z.coerce
@@ -116,15 +117,14 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="grid grid-cols-5 gap-4 max-w-5xl">
-        <Card className="col-span-2 h-full justify-center">
-          <CardHeader>
-            <CardTitle className="text-2xl font-extrabold tracking-tight">
-              {" "}
-              Prime Number Generator{" "}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="w-fill">
+      <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight mb-8">Prime Number Generator</h1>
+      <div className="grid md:grid-cols-5 gap-4 max-w-5xl">
+        <Card className="md:col-span-2 h-full justify-center">
+          <CardContent className="w-full mt-6 space-y-4">
+            <CardDescription className="text-muted-foreground tracking-tight text-justify">
+              Enter the desired number of digits and the quantity of prime numbers then click "Generate" to proceed.
+            </CardDescription>
+            <Separator />
             <Form {...form}>
               <form
                 onSubmit={(e) => {
@@ -176,7 +176,7 @@ export default function Home() {
             </Form>
           </CardContent>
         </Card>
-        <Card className="col-span-3">
+        <Card className="md:col-span-3">
           <CardHeader>
             <CardTitle>Runtime Line Graph</CardTitle>
             <CardDescription>
@@ -240,7 +240,7 @@ export default function Home() {
             </div>
           </CardFooter>
         </Card>
-        <Card className="col-span-5">
+        <Card className="md:col-span-5">
           <CardHeader>
             <CardTitle>Primes Generated</CardTitle>
             <CardDescription>
