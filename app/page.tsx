@@ -1,12 +1,13 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-
 import { useForm } from "react-hook-form";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { z } from "zod";
+import { toPng } from "html-to-image";
+import { saveAs } from "file-saver";
 
-import { Loader2 } from "lucide-react";
+import { Loader2, ImageDown, File } from "lucide-react";
 import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
 
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 
+import Papa from "papaparse";
+
 const FormSchema = z.object({
   primeDigits: z.coerce
     .number()
@@ -55,7 +58,9 @@ export default function Home() {
   type ResultType = { prime: number; time: number };
   const [results, setResults] = useState<ResultType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [averageTime, setAverageTime] = useState(0);
+  const elementRef = useRef<HTMLDivElement | null>(null);
 
   const form = useForm({
     resolver: zodResolver(FormSchema),
@@ -117,12 +122,34 @@ export default function Home() {
     });
   }
 
+  const htmlToImageConvert = async () => {
+    if (!elementRef.current) {
+      console.error("Element reference is null");
+      return;
+    }
+    setIsSaving(true); // Hide button before processing
+    try {
+      const dataUrl = await toPng(elementRef.current, { cacheBust: false });
+
+      const link = document.createElement("a");
+      link.download = "prime-chart.png";
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error("Error converting to image:", err);
+    } finally {
+      setIsSaving(false); // Show button again after process completes
+    }
+  };
+
+  const saveToCSV = () => {
+    const csv = Papa.unparse(results);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    saveAs(blob, "results.csv");
+  };
+
   return (
-    <main
-      className="flex min-h-screen flex-col items-center justify-between p-8 font-sans bg-radial-[at_50%_0%] from-white to-slate-50
-bg-radial-[at_50%_0%] from-white to-slate-50
-bg-radial-[at_50%_0%] from-white to-slate-50"
-    >
+    <main className="flex min-h-screen flex-col items-center justify-between p-8 font-sans bg-radial-[at_50%_0%] from-white to-slate-50 bg-radial-[at_50%_0%] from-white to-slate-50">
       <div className="grid md:grid-cols-5 gap-4 max-w-5xl w-full">
         <Card className="md:col-span-2 h-full">
           <CardHeader>
@@ -206,7 +233,7 @@ bg-radial-[at_50%_0%] from-white to-slate-50"
           </CardContent>
         </Card>
 
-        <Card className="md:col-span-3">
+        <Card ref={elementRef} className="md:col-span-3">
           <CardHeader>
             <CardTitle>Runtime Line Graph</CardTitle>
             <CardDescription>
@@ -273,22 +300,42 @@ bg-radial-[at_50%_0%] from-white to-slate-50"
           </CardContent>
 
           <Separator />
-          <CardFooter className="flex-col items-start gap-2 text-sm">
+          <CardFooter className="flex items-center gap-2 text-sm justify-between">
             <div className="leading-none text-muted-foreground">
               <span className="text-foreground font-bold">
                 Average Runtime:
               </span>{" "}
               {averageTime.toFixed(4)}s
             </div>
+            {!isSaving && results.length != 0 && (
+              <Button
+                onClick={htmlToImageConvert}
+                className="flex items-center space-x-2 font-bold text-white bg-indigo-400 hover:bg-indigo-500 hover:shadow-lg"
+              >
+                <ImageDown className="h-5 w-5" />
+                Download PNG
+              </Button>
+            )}
           </CardFooter>
         </Card>
 
         <Card className="md:col-span-5">
-          <CardHeader>
-            <CardTitle>Primes Generated</CardTitle>
-            <CardDescription>
-              All the prime numbers generated are shown here.
-            </CardDescription>
+          <CardHeader className="flex items-center gap-2 text-sm justify-between">
+            <div>
+              <CardTitle>Primes Generated</CardTitle>
+              <CardDescription>
+                All the prime numbers generated are shown here.
+              </CardDescription>
+            </div>
+            {results.length != 0 && (
+              <Button
+                onClick={saveToCSV}
+                className="flex items-center space-x-2 font-bold text-white bg-indigo-400 hover:bg-indigo-500 hover:shadow-lg"
+              >
+                <File className="h-5 w-5" />
+                Download CSV
+              </Button>
+            )}
           </CardHeader>
 
           <CardContent>
