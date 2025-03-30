@@ -74,6 +74,10 @@ export default function Home() {
       `/api/py/generate_prime?primeDigits=${form.getValues("primeDigits")}&iter=${form.getValues("iter")}`,
     );
 
+    // const eventSource = new EventSource(
+    //   `http://127.0.0.1:8000/api/py/generate_prime?primeDigits=${form.getValues("primeDigits")}&iter=${form.getValues("iter")}`,
+    // );
+
     eventSource.onmessage = (event) => {
       console.log("Received:", event.data); // Debugging
 
@@ -114,21 +118,25 @@ export default function Home() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-12">
-
+    <main
+      className="flex min-h-screen flex-col items-center justify-between p-8 font-sans bg-radial-[at_50%_0%] from-white to-slate-50
+bg-radial-[at_50%_0%] from-white to-slate-50
+bg-radial-[at_50%_0%] from-white to-slate-50"
+    >
       <div className="grid md:grid-cols-5 gap-4 max-w-5xl w-full">
         <Card className="md:col-span-2 h-full">
           <CardHeader>
-            <CardTitle>Prime Number Generator</CardTitle>
-            <CardDescription className="text-muted-foreground tracking-tight text-justify">
+            <CardTitle className="font-bold w-fit text-lg">
+              Prime Number Generator
+            </CardTitle>
+            <CardDescription className="text-muted-foreground text-justify">
               Enter the desired number of digits and the quantity of prime
               numbers then click &#34;Generate&#34; to proceed.
             </CardDescription>
           </CardHeader>
           <Separator />
-          
-          <CardContent className="w-full space-y-4">
 
+          <CardContent className="w-full space-y-4">
             <Form {...form}>
               <form
                 onSubmit={(e) => {
@@ -144,7 +152,13 @@ export default function Home() {
                     <FormItem>
                       <FormLabel>Number of Digits</FormLabel>
                       <FormControl>
-                        <Input type="number" min={1} max={1500} {...field} />
+                        <Input
+                          type="number"
+                          min={1}
+                          max={1500}
+                          className="bg-white"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -157,7 +171,13 @@ export default function Home() {
                     <FormItem>
                       <FormLabel>Number of Iterations</FormLabel>
                       <FormControl>
-                        <Input type="number" min={5} max={100} {...field} />
+                        <Input
+                          type="number"
+                          min={5}
+                          max={100}
+                          className="bg-white"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -173,12 +193,16 @@ export default function Home() {
                       </span>
                     </div>
                   ) : (
-                    <Button type="submit">Generate</Button>
+                    <Button
+                      type="submit"
+                      className="font-bold text-white bg-indigo-400 hover:bg-indigo-500 hover:shadow-lg"
+                    >
+                      Generate
+                    </Button>
                   )}
                 </div>
               </form>
             </Form>
-            
           </CardContent>
         </Card>
 
@@ -221,7 +245,7 @@ export default function Home() {
                     return (
                       <div className="p-2 bg-white shadow-md rounded">
                         <p className="text-sm font-semibold">
-                          Time: {time.toFixed(4)}s
+                          Time: {time.toFixed(5)}s
                         </p>
                         <p className="text-xs text-muted-foreground">
                           Index: {index}
@@ -230,10 +254,16 @@ export default function Home() {
                     );
                   }}
                 />
+                <defs>
+                  <linearGradient id="pinkGradient" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#ec4899" />
+                    <stop offset="100%" stopColor="#00bba7" />
+                  </linearGradient>
+                </defs>
                 <Line
                   dataKey="time"
                   type="linear"
-                  stroke="#000000"
+                  stroke="url(#pinkGradient)"
                   strokeWidth={2}
                   dot={false}
                   animationDuration={500}
@@ -242,9 +272,13 @@ export default function Home() {
             </ChartContainer>
           </CardContent>
 
+          <Separator />
           <CardFooter className="flex-col items-start gap-2 text-sm">
             <div className="leading-none text-muted-foreground">
-              Average Runtime: {averageTime.toFixed(4)}s
+              <span className="text-foreground font-bold">
+                Average Runtime:
+              </span>{" "}
+              {averageTime.toFixed(4)}s
             </div>
           </CardFooter>
         </Card>
@@ -264,7 +298,7 @@ export default function Home() {
               </div>
               <div className="flex flex-col space-y-1.5 max-h-32 overflow-y-scroll">
                 {results.length > 0 && (
-                  <ul className="grid gap-2">
+                  <ul className="grid gap-2 pr-8">
                     {results.map((item, index) => (
                       <li
                         key={index}
@@ -287,7 +321,6 @@ export default function Home() {
               </div>
             </div>
           </CardContent>
-
         </Card>
       </div>
     </main>
