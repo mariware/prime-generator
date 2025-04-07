@@ -27,6 +27,7 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -127,7 +128,7 @@ export default function Home() {
       console.error("Element reference is null");
       return;
     }
-    setIsSaving(true); // Hide button before processing
+    setIsSaving(true); // Hide button after processing
     try {
       const dataUrl = await toPng(elementRef.current, { cacheBust: false });
 
@@ -149,179 +150,199 @@ export default function Home() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-8 font-sans bg-radial-[at_50%_0%] from-white to-slate-50 bg-radial-[at_50%_0%] from-white to-slate-50">
-      <div className="grid md:grid-cols-5 gap-4 max-w-5xl w-full">
-        <Card className="md:col-span-2 h-full">
-          <CardHeader>
-            <CardTitle className="font-bold w-fit text-lg">
-              Prime Number Generator
-            </CardTitle>
-            <CardDescription className="text-muted-foreground text-justify">
-              Enter the desired number of digits and the quantity of prime
-              numbers then click &#34;Generate&#34; to proceed.
-            </CardDescription>
-          </CardHeader>
-          <Separator />
+    <main className="flex min-h-screen flex-col items-center justify-between p-8 sm:p-16 font-sans bg-purple-400 text-slate-800">
+      {/* <h1 className="text-2xl sm:text-4xl md:text-6xl tracking-tight font-extrabold mb-4 sm:mb-8">&#119979;{'['}<span className="text-slate-50">n</span>{']'}</h1> */}
+      <div className="grid md:grid-cols-5 gap-4 gap-x-0 max-w-5xl w-full">
+        <div className="md:col-span-2 clip-path-left bg-slate-800 w-full min-h-100">
+          <Card className="clip-path-left-inside rounded-none h-full bg-slate-50">
+            <CardHeader className="pr-10">
+              <CardTitle className="font-bold w-fit">
+                Prime Number Generator
+              </CardTitle>
+              <CardDescription className="text-muted-foreground text-justify">
+                Enter the desired number of digits and the quantity of prime
+                numbers then click &#34;Generate&#34; to proceed.
+              </CardDescription>
+            </CardHeader>
+            <Separator />
 
-          <CardContent className="w-full space-y-4">
-            <Form {...form}>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  fetchPrimes();
-                }}
-                className="w-full space-y-6"
-              >
-                <FormField
-                  control={form.control}
-                  name="primeDigits"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Number of Digits</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min={1}
-                          max={1500}
-                          className="bg-white"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="iter"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Number of Iterations</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min={5}
-                          max={100}
-                          className="bg-white"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="flex gap-4">
-                  {isLoading ? (
-                    <div className="flex items-center space-x-2 text-muted-foreground">
-                      <Loader2 className="animate-spin h-5 w-5" />
-                      <span className="text-muted-foreground">
-                        {" "}
-                        Generating Primes...{" "}
-                      </span>
-                    </div>
-                  ) : (
-                    <Button
-                      type="submit"
-                      className="font-bold text-white bg-indigo-400 hover:bg-indigo-500 hover:shadow-lg"
-                    >
-                      Generate
-                    </Button>
-                  )}
-                </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-
-        <Card ref={elementRef} className="md:col-span-3">
-          <CardHeader>
-            <CardTitle>Runtime Line Graph</CardTitle>
-            <CardDescription>
-              This chart shows the runtime of the prime number generation per
-              iteration.
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent>
-            <ChartContainer config={chartConfig} className="h-48 w-full">
-              <LineChart
-                accessibilityLayer
-                data={results}
-                margin={{
-                  left: 12,
-                  right: 12,
-                }}
-              >
-                <CartesianGrid vertical={false} />
-                <XAxis
-                  dataKey={"index"}
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  type="number" // Ensures proper numerical scaling
-                  domain={["dataMin", "dataMax"]} // Automatically adjust to the full dataset
-                  allowDecimals={false}
-                  interval="preserveStartEnd"
-                  tickFormatter={(value) => value}
-                />
-                <ChartTooltip
-                  cursor={false}
-                  content={({ payload }) => {
-                    if (!payload || payload.length === 0) return null;
-                    const { index, time } = payload[0].payload; // Extracting index and time
-                    return (
-                      <div className="p-2 bg-white shadow-md rounded">
-                        <p className="text-sm font-semibold">
-                          Time: {time.toFixed(5)}s
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Index: {index}
-                        </p>
-                      </div>
-                    );
+            <CardContent className="w-full space-y-4 pr-10">
+              <Form {...form}>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    fetchPrimes();
                   }}
-                />
-                <defs>
-                  <linearGradient id="pinkGradient" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#ec4899" />
-                    <stop offset="100%" stopColor="#00bba7" />
-                  </linearGradient>
-                </defs>
-                <Line
-                  dataKey="time"
-                  type="linear"
-                  stroke="url(#pinkGradient)"
-                  strokeWidth={2}
-                  dot={false}
-                  animationDuration={500}
-                />
-              </LineChart>
-            </ChartContainer>
-          </CardContent>
+                  className="w-full space-y-6"
+                >
+                  <FormField
+                    control={form.control}
+                    name="primeDigits"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Number of Digits</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min={1}
+                            max={1500}
+                            className="bg-white border-slate-800 rounded-none border-2"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription className="text-muted-foreground text-xs">
+                          The number of digits must be between 1 and 1500.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="iter"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Number of Iterations</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min={5}
+                            max={100}
+                            className="bg-white border-slate-800 rounded-none border-2"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription className="text-muted-foreground text-xs">
+                          The number of iterations must be between 5 and 100.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="flex gap-4 mb-4 h-10">
+                    {isLoading ? (
+                      <div className="flex items-center space-x-2 text-muted-foreground">
+                        <Loader2 className="animate-spin h-5 w-5" />
+                        <span className="text-muted-foreground font-bold">
+                          {" "}
+                          Generating Primes...{" "}
+                        </span>
+                      </div>
+                    ) : (
+                      <Button
+                        type="submit"
+                        className="font-bold text-white bg-purple-500 hover:bg-purple-700 hover:box-shadow-lg rounded-none border border-3 border-b-6 border-slate-800 py-4 active:translate-y-1 active:border-b-3"
+                      >
+                        Generate
+                      </Button>
+                    )}
+                  </div>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+        </div>
+        <div className="md:col-span-3 clip-path-right bg-slate-800 w-full">
+          <Card
+            ref={elementRef}
+            className="clip-path-right-inside rounded-none h-full bg-slate-50"
+          >
+            <CardHeader className="pl-12">
+              <CardTitle>Runtime Line Graph</CardTitle>
+              <CardDescription>
+                This chart shows the runtime of the prime number generation per
+                iteration.
+              </CardDescription>
+            </CardHeader>
 
-          <Separator />
-          <CardFooter className="flex items-center gap-2 text-sm justify-between">
-            <div className="leading-none text-muted-foreground">
-              <span className="text-foreground font-bold">
-                Average Runtime:
-              </span>{" "}
-              {averageTime.toFixed(4)}s
-            </div>
-            {!isSaving && results.length != 0 && (
-              <Button
-                onClick={htmlToImageConvert}
-                className="flex items-center space-x-2 font-bold text-white bg-indigo-400 hover:bg-indigo-500 hover:shadow-lg"
+            <CardContent className="pl-10">
+              <ChartContainer
+                config={chartConfig}
+                className="h-max max-h-48 w-full"
               >
-                <ImageDown className="h-5 w-5" />
-                Download PNG
-              </Button>
-            )}
-          </CardFooter>
-        </Card>
+                <LineChart
+                  accessibilityLayer
+                  data={results}
+                  margin={{
+                    left: 12,
+                    right: 12,
+                  }}
+                >
+                  <CartesianGrid vertical={false} />
+                  <XAxis
+                    dataKey={"index"}
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                    type="number" // Ensures proper numerical scaling
+                    domain={["dataMin", "dataMax"]} // Automatically adjust to the full dataset
+                    allowDecimals={false}
+                    interval="preserveStartEnd"
+                    tickFormatter={(value) => value}
+                  />
+                  <ChartTooltip
+                    cursor={false}
+                    content={({ payload }) => {
+                      if (!payload || payload.length === 0) return null;
+                      const { index, time } = payload[0].payload; // Extracting index and time
+                      return (
+                        <div className="p-2 bg-white shadow-md rounded">
+                          <p className="text-sm font-semibold">
+                            Time: {time.toFixed(5)}s
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Index: {index}
+                          </p>
+                        </div>
+                      );
+                    }}
+                  />
+                  <defs>
+                    <linearGradient
+                      id="purpleGradient"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop offset="0%" stopColor="#C084FC" />
+                      <stop offset="100%" stopColor="#6B21A8" />
+                    </linearGradient>
+                  </defs>
+                  <Line
+                    dataKey="time"
+                    type="linear"
+                    stroke="url(#purpleGradient)"
+                    strokeWidth={2}
+                    dot={false}
+                    animationDuration={500}
+                  />
+                </LineChart>
+              </ChartContainer>
+            </CardContent>
 
-        <Card className="md:col-span-5">
-          <CardHeader className="flex items-center gap-2 text-sm justify-between">
-            <div>
+            <Separator />
+            <CardFooter className="flex items-center gap-2 text-sm justify-between">
+              <div className="leading-none text-muted-foreground py-4 mb-3">
+                <span className="text-foreground font-bold pl-6">Mean:</span>{" "}
+                {averageTime.toFixed(4)}s
+              </div>
+              {!isSaving && results.length != 0 && (
+                <Button
+                  onClick={htmlToImageConvert}
+                  className="font-bold text-white bg-purple-500 hover:bg-purple-700 hover:box-shadow-lg rounded-none border border-3 border-b-6 border-slate-800 py-4 active:translate-y-1 active:border-b-3"
+                >
+                  <ImageDown className="h-5 w-5" />
+                  <span className="hidden sm:block">Download PNG</span>
+                </Button>
+              )}
+            </CardFooter>
+          </Card>
+        </div>
+
+        <Card className="md:col-span-5 bg-slate-50 min-h-100 rounded-none border-slate-800 border-3 border-b-13">
+          <CardHeader className="flex gap-4 pl-10 justify-between">
+            <div className="grid gap-1">
               <CardTitle>Primes Generated</CardTitle>
               <CardDescription>
                 All the prime numbers generated are shown here.
@@ -330,10 +351,10 @@ export default function Home() {
             {results.length != 0 && (
               <Button
                 onClick={saveToCSV}
-                className="flex items-center space-x-2 font-bold text-white bg-indigo-400 hover:bg-indigo-500 hover:shadow-lg"
+                className="font-bold text-white bg-purple-500 hover:bg-purple-700 hover:box-shadow-lg rounded-none border border-3 border-b-6 border-slate-800 py-4 active:translate-y-1 active:border-b-3"
               >
                 <File className="h-5 w-5" />
-                Download CSV
+                <span className="hidden sm:block">Download CSV</span>
               </Button>
             )}
           </CardHeader>
@@ -343,21 +364,23 @@ export default function Home() {
               <div className="flex flex-col space-y-1.5">
                 {/* <Label htmlFor="name">Name</Label> */}
               </div>
-              <div className="flex flex-col space-y-1.5 max-h-32 overflow-y-scroll">
+              <div className="flex flex-col space-y-1.5 overflow-y-scroll max-h-60 mb-2">
                 {results.length > 0 && (
-                  <ul className="grid gap-2 pr-8">
+                  <ul className="grid pr-8">
                     {results.map((item, index) => (
                       <li
                         key={index}
-                        className="grid grid-cols-[30px_1fr] items-start gap-2"
+                        className="group grid grid-cols-[30px_1fr] items-start gap-2 hover:bg-purple-400 hover:text-slate-800 p-4"
                       >
-                        <span className="text-muted-foreground">
+                        <span className="text-muted-foreground group-hover:text-white">
                           {index + 1}
                         </span>
                         <div>
-                          <span className="break-all">{item.prime}</span>
+                          <span className="break-all font-bold group-hover:text-slate-900">
+                            {item.prime}
+                          </span>
                           <br />
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-xs text-muted-foreground group-hover:text-white">
                             Time: {item.time.toFixed(4)}s
                           </span>
                         </div>
@@ -370,6 +393,17 @@ export default function Home() {
           </CardContent>
         </Card>
       </div>
+      <p className="mt-8 text-xs text-center">
+        {" "}
+        This website is developed by{" "}
+        <a href="https://github.com/mariware" className="font-bold">
+          mariware
+        </a>{" "}
+        as part of a Machine Problem for CMSC 191.{" "}
+        <br className="hidden sm:block" />
+        The project team consists of lsrimando, rsbobadilla, and adgapud. All
+        rights reserved.{" "}
+      </p>
     </main>
   );
 }

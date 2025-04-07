@@ -70,7 +70,8 @@ def generate_primes(primeDigits: int, iter: int):
         n = random.randint(lower_bound, upper_bound)
 
         start_time = time.time()
-        prime_number = next_prime(n)
+        candidate = next_prime(n)
+        prime_number = candidate if candidate < upper_bound else next_prime(lower_bound)
         elapsed_time = time.time() - start_time
 
         yield f"data: {json.dumps({'index': i + 1, 'prime': str(prime_number), 'time': elapsed_time})}\n\n"

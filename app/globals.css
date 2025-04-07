@@ -37,7 +37,7 @@
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
   --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
+  --radius-md: calc(var(--radius) - 3px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 }
@@ -117,5 +117,65 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .clip-path-left {
+    clip-path: polygon(
+      calc(100% - 10px) 10%,
+      100% calc(10% + 10px),
+      100% calc(50% - 10px),
+      calc(100% - 20px) calc(50% + 10px),
+      calc(100% - 20px) calc(90% - 20px),
+      calc(100% - 10px) calc(90% - 10px),
+      calc(100% - 10px) 100%,
+      0 100%,
+      0 0,
+      calc(100% - 10px) 0
+    );
+  }
+  .clip-path-left-inside {
+    clip-path: polygon(
+      calc(100% - 13px) calc(10% + 1px),
+      calc(100% - 3px) calc(10% + 11px),
+      calc(100% - 3px) calc(50% - 11px),
+      calc(100% - 23px) calc(50% + 9px),
+      calc(100% - 23px) calc(90% - 19px),
+      calc(100% - 13px) calc(90% - 9px),
+      calc(100% - 13px) calc(100% - 13px),
+      3px calc(100% - 13px),
+      3px 3px,
+      calc(100% - 13px) 3px
+    );
+  }
+  .clip-path-right {
+    clip-path: polygon(
+      calc(0% + 10px) 10%,
+      calc(0% + 20px) calc(10% + 10px),
+      calc(0% + 20px) calc(50% - 10px),
+      0% calc(50% + 10px),
+      0% calc(90% - 20px),
+      calc(0% + 10px) calc(90% - 10px),
+      calc(0% + 10px) 100%,
+      100% 100%,
+      100% 0%,
+      calc(0% + 10px) 0%
+    );
+  }
+
+  .clip-path-right-inside {
+    clip-path: polygon(
+      calc(0% + 13px) calc(10% - 1px),
+      calc(0% + 23px) calc(10% + 9px),
+      calc(0% + 23px) calc(50% - 9px),
+      calc(0% + 3px) calc(50% + 11px),
+      calc(0% + 3px) calc(90% - 21px),
+      calc(0% + 13px) calc(90% - 11px),
+      calc(0% + 13px) calc(100% - 13px),
+      calc(100% - 3px) calc(100% - 13px),
+      calc(100% - 3px) 3px,
+      calc(0% + 13px) 3px
+    );
   }
 }
